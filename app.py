@@ -1,34 +1,40 @@
-import os
-import datetime
-import subprocess
 from flask import Flask
+import os
+from datetime import datetime
+import pytz
+import subprocess
 
 app = Flask(__name__)
 
 @app.route('/htop')
 def htop():
    
-    system_user = os.getenv('USER', 'codespace')
+    name = "Utkarsh Singh"  
+    
 
-
-    ist_time = datetime.datetime.utcnow() + datetime.timedelta(hours=5, minutes=30)
-    formatted_time = ist_time.strftime("%Y-%m-%d %H:%M:%S IST")
-
+    username = os.getenv('USER', 'codespace')  
+    
+    # Get IST Time
+    utc_now = datetime.now(pytz.utc)
+    ist = utc_now.astimezone(pytz.timezone('Asia/Kolkata'))
+    server_time = ist.strftime('%Y-%m-%d %H:%M:%S %Z')
+    
+  
     try:
-        htop_output = subprocess.run(['top', '-b', '-n', '1'], capture_output=True, text=True).stdout
+        top_output = subprocess.check_output(['top', '-b', '-n', '1'], text=True, timeout=5)
     except Exception as e:
-        htop_output = f"Error fetching top output: {str(e)}"
-
+        top_output = f"Error fetching top output: {str(e)}"
+    
     return f"""
     <html>
     <head><title>System Info</title></head>
     <body>
         <h1>System Information</h1>
-        <p><strong>Name:</strong>Utkarsh Singh</p>
-        <p><strong>Username:</strong> {system_user}</p>
-        <p><strong>Server Time (IST):</strong> {formatted_time}</p>
+        <p><strong>Name:</strong> {name}</p>
+        <p><strong>Username:</strong> {username}</p>
+        <p><strong>Server Time (IST):</strong> {server_time}</p>
         <h2>Top Output:</h2>
-        <pre>{htop_output}</pre>
+        <pre>{top_output}</pre>
     </body>
     </html>
     """
